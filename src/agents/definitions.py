@@ -7,7 +7,7 @@ Architecture:
 """
 
 from datetime import datetime
-from agents import Agent
+from agents import Agent, ModelSettings
 from src.tools.sql_tools import run_sql_query
 from src.utils.database import get_schema_context
 
@@ -92,10 +92,10 @@ If results are empty/wrong, hand off to SQL agent briefly.
 Otherwise: STATE THE ANSWER, NOTHING MORE.""",
         handoffs=[sql_agent],
         model="gpt-5",
-        model_settings={
-            "verbosity": "low",
-            "reasoning_effort": "medium"
-        }
+        model_settings=ModelSettings(
+            verbosity="low",
+            reasoning_effort="medium"
+        )
     )
 
 
