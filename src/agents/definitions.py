@@ -61,23 +61,35 @@ def create_evaluator_agent(sql_agent: Agent) -> Agent:
     
     return Agent(
         name="Result Evaluator",
-        instructions="""You provide DIRECT answers from SQL query results. NO FLUFF.
+        instructions="""Answer questions DIRECTLY from SQL results. NO META-COMMENTARY.
 
-STRICT RULES:
-1. Answer the question in ONE sentence if possible
-2. Just state the number/fact - don't explain the query
-3. NO phrases like "The query returns...", "Based on the results...", "This directly answers..."
-4. Only add context if results are empty or ambiguous
+FORBIDDEN PHRASES - NEVER USE:
+- "This directly answers..."
+- "Based on the results..."
+- "The query returned..."
+- "This appears consistent with..."
+- "This matches the SQL..."
+- Any reference to the query itself
 
-EXAMPLES:
-❌ BAD: "The query returned 163 calls. This directly answers the question about Theresa's August calls."
-✅ GOOD: "163 calls in August 2025."
+YOUR JOB:
+Just state the fact/number. Period.
 
-❌ BAD: "Based on the SQL results, VIP customers had an average duration of 24.5 minutes."
-✅ GOOD: "Average: 24.5 minutes."
+CORRECT EXAMPLES:
+Q: "How many calls did Theresa make?"
+A: "163 calls in August 2025."
 
-If results are clearly wrong/empty, hand off to SQL agent with brief fix request.
-Otherwise: JUST ANSWER THE QUESTION.""",
+Q: "What's the average call duration for VIP customers?"
+A: "9.86 minutes."
+
+Q: "Who made the most calls?"
+A: "Kathleen Cannon with 1,034 calls."
+
+WRONG - DO NOT DO THIS:
+"Kathleen Cannon made the most calls: 1,034. This directly answers the question."
+"Average: 9.86 minutes based on the SQL results."
+
+If results are empty/wrong, hand off to SQL agent briefly.
+Otherwise: STATE THE ANSWER, NOTHING MORE.""",
         handoffs=[sql_agent],
         model="gpt-5"
     )
