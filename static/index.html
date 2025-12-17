@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Query Agent</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-input: #1a1a24;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #2d2d3a;
+            --success: #22c55e;
+            --error: #ef4444;
+            --user-bg: #1e3a5f;
+            --agent-bg: #1a1a24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .chat-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+
+        .message.user {
+            background: var(--user-bg);
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.agent {
+            background: var(--agent-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .message.loading .message-content {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .turn-counter {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .input-area {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        input[type="text"]:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .examples {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .example-chip {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-chip:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Call Center Query Agent</h1>
+            <p class="subtitle">Ask questions about your call data • Follow-up supported</p>
+        </header>
+
+        <div class="turn-counter" id="turnCounter">New conversation</div>
+
+        <div class="chat-container" id="chat">
+            <div style="text-align: center; color: var(--text-secondary); margin-top: 150px;">
+                Start by asking a question below
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-group">
+                <input type="text" id="question" placeholder="Ask a question..." autofocus>
+                <button id="submit" onclick="submitQuery()">Ask</button>
+                <button class="btn-secondary" onclick="newChat()">New Chat</button>
+            </div>
+            <div class="examples" id="examples">
+                <span class="example-chip" onclick="setExample(this)">How many calls did Theresa make in August?</span>
+                <span class="example-chip" onclick="setExample(this)">What's the average call duration for VIP
+                    customers?</span>
+                <span class="example-chip" onclick="setExample(this)">Top 5 employees by call count</span>
+                <span class="example-chip" onclick="setExample(this)">List transferred calls from Sales</span>
+                <span class="example-chip" onclick="setExample(this)">How many customers named Joseph?</span>
+                <span class="example-chip" onclick="setExample(this)">Show complaints from last month</span>
+                <span class="example-chip" onclick="setExample(this)">Recent calls (last 10 days)</span>
+                <span class="example-chip" onclick="setExample(this)">Calls by department this year</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span id="sessionInfo"></span>
+            <a href="https://logfire-us.pydantic.dev/pari2798/agentic-callcenter" target="_blank">
+                📊 Logfire Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        const MAX_TURNS = 5;
+        let sessionId = null;
+        let turnCount = 0;
+        let messages = [];
+
+        function setExample(el) {
+            document.getElementById('question').value = el.textContent;
+            document.getElementById('question').focus();
+        }
+
+        function updateTurnCounter() {
+            const el = document.getElementById('turnCounter');
+            if (turnCount === 0) {
+                el.textContent = 'New conversation';
+            } else if (turnCount >= MAX_TURNS) {
+                el.textContent = `Turn ${turnCount}/${MAX_TURNS} - Max reached, start new chat`;
+            } else {
+                el.textContent = `Turn ${turnCount}/${MAX_TURNS} - Follow-up questions enabled`;
+            }
+        }
+
+        function renderMessages() {
+            const chat = document.getElementById('chat');
+            if (messages.length === 0) {
+                chat.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); margin-top: 150px;">
+                        Start by asking a question below
+                    </div>`;
+                return;
+            }
+
+            chat.innerHTML = messages.map((m, i) => `
+                <div class="message ${m.role} ${m.loading ? 'loading' : ''}">
+                    <div class="message-label">${m.role === 'user' ? 'You' : 'Explorer'}</div>
+                    <div class="message-content">${escapeHtml(m.content)}</div>
+                </div>
+            `).join('');
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function newChat() {
+            sessionId = null;
+            turnCount = 0;
+            messages = [];
+            localStorage.removeItem('sessionId');
+            updateTurnCounter();
+            renderMessages();
+            document.getElementById('question').value = '';
+            document.getElementById('question').focus();
+            document.getElementById('sessionInfo').textContent = '';
+            document.getElementById('examples').style.display = 'flex';
+        }
+
+        async function submitQuery() {
+            const input = document.getElementById('question');
+            const question = input.value.trim();
+            if (!question) return;
+
+            if (turnCount >= MAX_TURNS) {
+                alert(`Maximum ${MAX_TURNS} turns reached. Please start a new chat.`);
+                return;
+            }
+
+            turnCount++;
+
+            // Add user message
+            messages.push({ role: 'user', turn: turnCount, content: question });
+            messages.push({ role: 'agent', turn: turnCount, content: 'Thinking...', loading: true });
+            renderMessages();
+            updateTurnCounter();
+
+            // Hide examples after first query
+            document.getElementById('examples').style.display = 'none';
+
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('submit').disabled = true;
+
+            try {
+                const res = await fetch(API + '/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, session_id: sessionId })
+                });
+
+                const data = await res.json();
+
+                // Update the loading message
+                messages[messages.length - 1] = {
+                    role: 'agent',
+                    turn: turnCount,
+                    content: data.success ? data.answer : (data.detail || 'Query failed'),
+                    loading: false
+                };
+
+                if (data.success) {
+                    sessionId = data.session_id;
+                    localStorage.setItem('sessionId', sessionId);
+                    document.getElementById('sessionInfo').textContent = 'Session: ' + sessionId.slice(0, 8) + '...';
+                }
+            } catch (err) {
+                messages[messages.length - 1] = {
+                    role: 'agent',
+                    turn: turnCount,
+                    content: 'Error: ' + err.message,
+                    loading: false
+                };
+            }
+
+            renderMessages();
+            input.disabled = false;
+            document.getElementById('submit').disabled = false;
+            input.focus();
+        }
+
+        document.getElementById('question').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitQuery();
+        });
+
+        // Initialize
+        updateTurnCounter();
+    </script>
+</body>
+
+</html>
