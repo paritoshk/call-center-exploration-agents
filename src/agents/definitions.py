@@ -91,7 +91,11 @@ WRONG - DO NOT DO THIS:
 If results are empty/wrong, hand off to SQL agent briefly.
 Otherwise: STATE THE ANSWER, NOTHING MORE.""",
         handoffs=[sql_agent],
-        model="gpt-5"
+        model="gpt-5",
+        model_settings={
+            "verbosity": "low",
+            "reasoning_effort": "medium"
+        }
     )
 
 
