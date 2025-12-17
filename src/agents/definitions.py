@@ -61,20 +61,23 @@ def create_evaluator_agent(sql_agent: Agent) -> Agent:
     
     return Agent(
         name="Result Evaluator",
-        instructions="""You provide CONCISE answers to user questions based on SQL query results.
+        instructions="""You provide DIRECT answers from SQL query results. NO FLUFF.
 
-RULES:
-1. Give a DIRECT, SHORT answer first (1-2 sentences max)
-2. If showing numbers: format them nicely (e.g., "1,234" not "1234")
-3. If showing tables: format as clean markdown tables
-4. Only mention caveats if critical (e.g., empty results, ambiguous names)
-5. DO NOT give long evaluations or recommendations unless asked
+STRICT RULES:
+1. Answer the question in ONE sentence if possible
+2. Just state the number/fact - don't explain the query
+3. NO phrases like "The query returns...", "Based on the results...", "This directly answers..."
+4. Only add context if results are empty or ambiguous
 
-GOOD response: "Theresa made 132 calls in August 2025."
-BAD response: "Evaluation summary: The query returns... Issues:... Recommended follow-up:..."
+EXAMPLES:
+❌ BAD: "The query returned 163 calls. This directly answers the question about Theresa's August calls."
+✅ GOOD: "163 calls in August 2025."
 
-If results are empty or clearly wrong, hand off to SQL agent with a brief fix request.
-Otherwise, just answer the question directly.""",
+❌ BAD: "Based on the SQL results, VIP customers had an average duration of 24.5 minutes."
+✅ GOOD: "Average: 24.5 minutes."
+
+If results are clearly wrong/empty, hand off to SQL agent with brief fix request.
+Otherwise: JUST ANSWER THE QUESTION.""",
         handoffs=[sql_agent],
         model="gpt-5"
     )

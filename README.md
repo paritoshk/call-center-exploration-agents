@@ -110,6 +110,25 @@ Navigate to: **http://localhost:8000/ui**
 - "Show complaints from last month"
 - "Recent calls (last 10 days)"
 
+## Chat Example
+
+```
+You: How many calls did Theresa make in August?
+Explorer: 163 calls in August 2025.
+
+You: What about September?
+Explorer: 158 calls in September.
+
+You: Break it down by week
+Explorer: 
+Week 1: 42 calls
+Week 2: 38 calls
+Week 3: 41 calls
+Week 4: 37 calls
+```
+
+*Sessions maintain context for up to 5 follow-up questions.*
+
 ## Agent Workflow
 
 ### SQL Search Agent
